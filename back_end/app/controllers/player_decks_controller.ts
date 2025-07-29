@@ -3,6 +3,7 @@ import { Game } from '../mongo_models/game.js'
 import { PlayerDeck } from '../mongo_models/player_deck.js'
 import { Card } from '../mongo_models/cards.js';
 import User from '#models/user';
+import { io } from '#start/socket';
 
 export default class PlayerDecksController {
 
@@ -89,6 +90,7 @@ export default class PlayerDecksController {
         game.winner = playersDecks.find(deck => deck.totalValue === maxValue)?.playerId ?? null;
         await playerDeck.save();
         await game.save();
+        io.to(`game:${game._id}`).emit('gameNotify', { game: game._id });
         return response.ok({
           message: 'Game finished',
           data: {
@@ -101,6 +103,7 @@ export default class PlayerDecksController {
     }
     await playerDeck.save();
     await game.save();
+    io.to(`game:${game._id}`).emit('gameNotify', { game: game._id });
     return response.ok({
       message: 'Card drawn successfully',
       data: {
@@ -137,6 +140,8 @@ export default class PlayerDecksController {
     }
     playerDeck.isReady = true;
     await playerDeck.save();
+    io.to(`game:${game._id}`).emit('gameNotify', { game: game._id });
+    
     return response.ok({
       message: 'Player is now ready',
       data: {playerDeck: playerDeck}
@@ -175,6 +180,7 @@ export default class PlayerDecksController {
       const maxValue = Math.max(...totalValues);
       game.winner = playersDecks.find(deck => deck.totalValue === maxValue)?.playerId ?? null;
       await game.save();
+      io.to(`game:${game._id}`).emit('gameNotify', { game: game._id });
       return response.ok({
         message: 'Game finished',
         data: {
@@ -190,9 +196,14 @@ export default class PlayerDecksController {
 
 
     await game.save();
+    io.to(`game:${game._id}`).emit('gameNotify', { game: game._id });
     return response.ok({
       message: 'Turn ended successfully',
-      data: game
+      data: {
+        game: {
+          game: game
+        }
+      }
     });
   }
 
@@ -235,6 +246,7 @@ export default class PlayerDecksController {
       game.winner = user.id;
       game.isFinished = true;
       await game.save();
+      io.to(`game:${game._id}`).emit('gameNotify', { game: game._id });
       return response.ok({
         message: 'Blackjack! You win!',
         data: {

@@ -26,6 +26,14 @@ export class Game {
 
   playerDecks = signal<IPlayerDeckWithPlayer[]>([]);
 
+  gameIsActive = computed(() => {
+    return this.game() && this.game()?.data.game.is_active || false;
+  })
+
+  readyToRestart = computed(() => {
+    return this.game() && this.game()?.data.game.winner !== null || false;
+  })
+
   playerDeck = computed(() => {
     if (!this.user || !this.playerDecks()) return null;
     return this.playerDecks().find(deck => deck.playerId === this.user.id) || null;
@@ -34,6 +42,15 @@ export class Game {
   isOwner = computed(() => {
     return this.game()?.data.isOwner || false;
   });
+
+  isYourTurn = computed(() => {
+    return this.game()?.data.isYourTurn || false;
+  });
+
+  winner = computed(() => {
+    console.log('Current game Winner:', this.game()?.data.game.winner);
+    return this.game()?.data.game.winner || null;
+  })
 
 
   constructor() {
@@ -44,6 +61,46 @@ export class Game {
         console.log('Game updated:', game);
         console.log('Player decks:', this.playerDecks());
       });
+    });
+
+    this.gameService.connectWebSocket().subscribe({
+      next: (data) => {
+        this.gameService.getGame().subscribe((game) => {
+          this.game.set(game);
+          this.playerDecks.set(game.data.playersDecks);
+          console.log('Game updated from WebSocket:', game);
+          console.log('Player decks from WebSocket:', this.playerDecks());
+        })
+      },
+      error: (error) => {
+        console.error('WebSocket error:', error);
+      }
+    })
+
+
+
+  }
+
+  restartGame() {
+
+    if (!this.game() || !this.isOwner()) {
+      console.log('You are not the owner of the game or the game is not available.');
+      return;
+    }
+
+    if (!this.readyToRestart()) {
+      console.log('Game is not ready to be restarted.');
+      return;
+    }
+
+    this.playerDeckService.restartGame().subscribe({
+      next: (response) => {
+        console.log('Game restarted successfully:', response);
+        // Update game state if necessary
+      },
+      error: (error) => {
+        console.error('Error restarting game:', error);
+      }
     });
   }
 
@@ -74,6 +131,46 @@ export class Game {
         console.error('Error starting game:', error);
       }
     })
+  }
+
+  pedirCarta() {
+    if (!this.game() || !this.playerDeck()) return;
+
+    if (!this.isYourTurn()) {
+      console.log('It is not your turn to request a card.');
+      return;
+    }
+
+
+
+    this.playerDeckService.pedirCarta().subscribe({
+      next: (response) => {
+        console.log('Card requested:', response);
+        // Update player deck with the new card
+      },
+      error: (error) => {
+        console.error('Error requesting card:', error);
+      }
+    });
+  }
+
+  terminarTurno() {
+    if (!this.game() || !this.playerDeck()) return;
+
+    if (!this.isYourTurn()) {
+      console.log('It is not your turn to finish.');
+      return;
+    }
+
+    this.playerDeckService.terminarTurno().subscribe({
+      next: (response) => {
+        console.log('Turn ended successfully:', response);
+        // Update game state if necessary
+      },
+      error: (error) => {
+        console.error('Error ending turn:', error);
+      }
+    });
   }
 
 

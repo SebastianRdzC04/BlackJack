@@ -4,3 +4,13 @@ export interface ICard {
     suit: string;
     value: number;
 }
+
+
+export interface PedirCartaResponse {
+    message: string; 
+    data:{
+        card: ICard;
+        totalValue: number;
+        count: number;
+    }
+}

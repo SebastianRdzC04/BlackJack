@@ -11,7 +11,7 @@ export interface IGame {
   players: IUser[];
   is_active: boolean;
   turn: number;
-  winner: string | null;
+  winner: IUser | null;
   joinCode: string;
   isFinished: boolean;
 }
@@ -37,5 +37,6 @@ export interface GetGameResponse {
     isOwner: boolean;
     game: IGame;
     playersDecks: IPlayerDeckWithPlayer[];
+    isYourTurn: boolean;
   }
 }

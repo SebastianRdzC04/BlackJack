@@ -4,6 +4,7 @@ import { Card } from '../mongo_models/cards.js'
 import { PlayerDeck } from '../mongo_models/player_deck.js'
 import User from '#models/user'
 import mongoose from 'mongoose';
+import { io } from '#start/socket'
 
 
 interface ICard {
@@ -137,27 +138,27 @@ export default class GamesController {
     }
 
 
+    const isPlayerTurn = game.turn === game.players.indexOf(user.id);
+
+    const winnerData = game.winner ? await User.findBy('id', game.winner) : null;
+
 
 
     if (game.owner === user.id) {
-
-
-
       const gameObject = game.toObject();
       const gameWithData = {
         ...gameObject,
-        players: playersData
-      }
-
-      
-
+        players: playersData,
+        winner: winnerData
+      };
 
       return response.ok({
         message: 'Game retrieved successfully',
         data: {
           isOwner: game.owner === user.id,
           game: gameWithData,
-          playersDecks: playersDecksWithData
+          playersDecks: playersDecksWithData,
+          isYourTurn: isPlayerTurn
         }
       });
     }else {
@@ -168,13 +169,12 @@ export default class GamesController {
         });
       }
 
-
-
       const gameObject = game.toObject();
       const gameWithoutDeck = {
         ...gameObject,
         deck: undefined, // Exclude the deck from the response
-        players: playersData
+        players: playersData,
+        winner: winnerData
       }
       return response.ok({
         message: 'Game retrieved successfully',
@@ -182,6 +182,7 @@ export default class GamesController {
           isOwner: game.owner === user.id,
           game: gameWithoutDeck,
           playersDecks: playersDecksWithData.filter(deck => deck.playerId === user.id),
+          isYourTurn: isPlayerTurn,
         }
       });
     }
@@ -319,6 +320,9 @@ export default class GamesController {
       players: playersData
     }
 
+    // Notify all sockets in the game room
+    io.to(`game:${game._id}`).emit('gameNotify', { game: game._id });
+
     return response.ok({
       message: 'Joined game successfully',
       data: {
@@ -398,6 +402,8 @@ export default class GamesController {
       ...gameStarted.toObject(),
       players: playersData
     }
+    io.to(`game:${game._id}`).emit('gameNotify', { game: game._id });
+
 
     return response.ok({
       message: 'Game started successfully',
@@ -441,6 +447,8 @@ export default class GamesController {
     game.players = game.players.filter(playerId => playerId !== user.id);
     game.is_active = false;
     await game.save();
+
+    io.to(`game:${game._id}`).emit('gameNotify', { game: game._id });
 
     await PlayerDeck.deleteMany({ playerId: user.id, gameId: game._id });
     return response.ok({
@@ -489,6 +497,13 @@ export default class GamesController {
 
     try {
       const gameRestarted = await startGame(gameId);
+      if (!gameRestarted) {
+        return response.internalServerError({
+          message: 'Error restarting game'
+        });
+      }
+      io.to(`game:${game._id}`).emit('gameNotify', { game: game._id });
+
       return response.ok({
         message: 'Game restarted successfully',
         data: gameRestarted
