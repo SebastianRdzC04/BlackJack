@@ -1,0 +1,45 @@
+<div class="w-screen h-screen flex flex-col bg-gradient-to-br from-[#222] via-[#1e1e1e] to-[#111]">
+  <!-- Tablero principal -->
+  <div class="flex w-full h-[90%]" >
+    <!-- Aquí irá el tablero principal del juego -->
+    <div class="w-full h-full flex ">
+      @for (deck of playerDecks(); track deck.playerId) {
+
+        <app-player-deck class="mx-auto" [playerDeck]="deck"></app-player-deck>
+      }
+ 
+
+    </div>
+  </div>
+  <!-- Menú inferior -->
+  <div class="h-[10%] min-h-[70px] bg-[#222] border-t-2 border-yellow-400 flex items-center justify-center gap-6 shadow-2xl">
+
+    @if(game() && isOwner()) {
+      <button (click)="startGame()" class="px-5 py-2 rounded-lg bg-gradient-to-r from-yellow-400 to-yellow-700 text-[#222] font-bold shadow hover:scale-105 transition-all duration-150">
+        Iniciar Juego
+      </button>
+    }
+
+
+    <button class="px-5 py-2 rounded-lg bg-gradient-to-r from-yellow-400 to-yellow-700 text-[#222] font-bold shadow hover:scale-105 transition-all duration-150">
+      Salir
+    </button>
+    <button class="px-5 py-2 rounded-lg bg-gradient-to-r from-yellow-400 to-yellow-700 text-[#222] font-bold shadow hover:scale-105 transition-all duration-150">
+      Pedir carta
+    </button>
+    <button class="px-5 py-2 rounded-lg bg-gradient-to-r from-yellow-400 to-yellow-700 text-[#222] font-bold shadow hover:scale-105 transition-all duration-150">
+      Terminar turno
+    </button>
+
+    @if( playerDeck() && !playerDeck()?.isReady){
+      <button (click)="playerReady()" class="px-5 py-2 rounded-lg bg-gradient-to-r from-yellow-400 to-yellow-700 text-[#222] font-bold shadow hover:scale-105 transition-all duration-150">
+      Estar Listo
+      </button>
+
+    }
+
+
+
+    <!-- Agrega más botones si lo necesitas -->
+  </div>
+</div>

@@ -1,0 +1,35 @@
+<div style="display: flex; justify-content: center; align-items: center; height: 100vh; background: radial-gradient(circle at 50% 30%, #222 60%, #111 100%);">
+  <form style="
+    background: rgba(30, 30, 30, 0.98);
+    padding: 2.5rem 3rem;
+    border-radius: 18px;
+    box-shadow: 0 4px 32px 0 rgba(0,0,0,0.45), 0 0 0 4px #d4af37;
+    min-width: 340px;
+    border: 2px solid #d4af37;
+    position: relative;
+    ">
+    <div style="position: absolute; top: -32px; left: 50%; transform: translateX(-50%);">
+      <img src="https://cdn-icons-png.flaticon.com/512/616/616554.png" alt="Casino" style="width: 64px; height: 64px; filter: drop-shadow(0 2px 8px #d4af37);">
+    </div>
+    <h2 style="text-align: center; margin-bottom: 2rem; color: #d4af37; font-family: 'Cinzel', serif; letter-spacing: 2px; font-size: 2rem; text-shadow: 0 2px 8px #000;">
+      BlackJack Casino
+    </h2>
+    <div style="margin-bottom: 1.2rem;">
+      <label for="email" style="display: block; margin-bottom: 0.5rem; color: #fff; font-weight: 500; letter-spacing: 1px;">Correo:</label>
+      <input type="email" id="email" [formControl]="email" placeholder="ejemplo@casino.com"
+        style="width: 100%; padding: 0.7rem; border: 1.5px solid #d4af37; border-radius: 8px; font-size: 1rem; background: #222; color: #fff; box-shadow: 0 1px 6px #000;">
+    </div>
+    <div style="margin-bottom: 1.5rem;">
+      <label for="password" style="display: block; margin-bottom: 0.5rem; color: #fff; font-weight: 500; letter-spacing: 1px;">Contraseña:</label>
+      <input type="password" id="password" [formControl]="password" placeholder="Mínimo 6 caracteres"
+        style="width: 100%; padding: 0.7rem; border: 1.5px solid #d4af37; border-radius: 8px; font-size: 1rem; background: #222; color: #fff; box-shadow: 0 1px 6px #000;">
+    </div>
+    <button type="button" (click)="login()"
+      style="width: 100%; padding: 0.9rem; background: linear-gradient(90deg, #d4af37 0%, #b8860b 100%); color: #222; border: none; border-radius: 8px; font-size: 1.15rem; font-family: 'Cinzel', serif; font-weight: bold; letter-spacing: 1px; cursor: pointer; box-shadow: 0 2px 12px #d4af37;">
+      Iniciar sesión
+    </button>
+    <div style="text-align: center; margin-top: 1.5rem;">
+      <span style="color: #d4af37; font-size: 0.95rem;">¡Bienvenido al casino BlackJack!</span>
+    </div>
+  </form>
+</div>

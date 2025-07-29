@@ -1,0 +1,27 @@
+services:
+  postgres-battleship:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin123
+      POSTGRES_DB: bd_battleship
+    ports:
+      - "2011:5432"
+    volumes:
+      - postgres_data_battleship:/var/lib/postgresql/data
+
+  mongo-battleship:
+    image: mongo:6
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin123
+    ports:
+      - "2012:27017"
+    volumes:
+      - mongo_data_battleship:/data/db
+
+volumes:
+  postgres_data_battleship:
+  mongo_data_battleship:

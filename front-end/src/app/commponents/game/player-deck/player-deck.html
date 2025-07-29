@@ -1,0 +1,14 @@
+<div class="flex flex-col">
+    <div>
+        <app-deck [deck]="cards()"></app-deck>
+    </div>
+    <div>
+        <!-- Mostrar información del usuario -->
+         @if (playerDeck()?.player){
+             <div>
+                 <span class="text-white">Jugador: {{ player().fullName }}</span>
+                 <!-- Agrega más campos si lo necesitas -->
+             </div>
+         }
+    </div>
+</div>

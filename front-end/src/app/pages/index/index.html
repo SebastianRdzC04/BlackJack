@@ -1,0 +1,73 @@
+<div class="flex justify-center items-center min-h-screen" style="background: radial-gradient(circle at 50% 30%, #222 60%, #111 100%);">
+  <div class="bg-[#1e1e1e]/[0.98] p-10 rounded-2xl shadow-2xl min-w-[340px] border-2 border-yellow-400 relative">
+    <div class="absolute -top-8 left-1/2 -translate-x-1/2">
+      <img src="https://cdn-icons-png.flaticon.com/512/616/616554.png" alt="Casino" class="w-16 h-16 drop-shadow-[0_2px_8px_#d4af37]" />
+    </div>
+    <h2 class="text-center mb-8 text-yellow-400 font-cinzel tracking-wider text-2xl drop-shadow-lg">
+      BlackJack Casino
+    </h2>
+    <div class="flex flex-col gap-5">
+      <button type="button"
+        class="w-full py-3 bg-gradient-to-r from-yellow-400 to-yellow-700 text-[#222] border-none rounded-lg text-lg font-cinzel font-bold tracking-wide cursor-pointer shadow-lg"
+        (click)="logout()">
+        Cerrar sesión
+      </button>
+      <button type="button"
+        class="w-full py-3 bg-gradient-to-r from-yellow-400 to-yellow-700 text-[#222] border-none rounded-lg text-lg font-cinzel font-bold tracking-wide cursor-pointer shadow-lg"
+        (click)="openSeguroModal()">
+        Iniciar partida
+      </button>
+      <button type="button"
+        class="w-full py-3 bg-gradient-to-r from-yellow-400 to-yellow-700 text-[#222] border-none rounded-lg text-lg font-cinzel font-bold tracking-wide cursor-pointer shadow-lg"
+        (click)="openUnirseModal()">
+        Unirse a una partida
+      </button>
+    </div>
+    <div class="text-center mt-6">
+      <span class="text-yellow-400 text-base">¡Listo para jugar BlackJack!</span>
+    </div>
+    @if (showSeguroModal) {
+      <div class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
+        <div class="bg-[#222] rounded-xl p-8 shadow-2xl border-2 border-yellow-400 w-[350px] relative">
+          <h3 class="text-yellow-400 text-xl font-bold mb-4 text-center">Confirmar el inicio de partida</h3>
+          <div class="flex justify-center gap-4 mt-6">
+            <button type="button"
+              class="px-4 py-2 rounded bg-yellow-400 text-[#222] font-bold shadow"
+              (click)="confirmarSeguro()">
+              Confirmar
+            </button>
+            <button type="button"
+              class="px-4 py-2 rounded bg-gray-700 text-white font-bold shadow"
+              (click)="closeSeguroModal()">
+              Cancelar
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+    @if (showUnirseModal) {
+      <div class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
+        <div class="bg-[#222] rounded-xl p-8 shadow-2xl border-2 border-yellow-400 w-[350px] relative">
+          <h3 class="text-yellow-400 text-xl font-bold mb-4 text-center">Ingresa el código de partida</h3>
+          <input type="text"
+            class="w-full mb-4 px-3 py-2 rounded border border-yellow-400 bg-[#1e1e1e] text-yellow-400 focus:outline-none"
+            [(ngModel)]="codigoPartida"
+            placeholder="Código de partida" />
+          <div class="flex justify-center gap-4 mt-2">
+            <button type="button"
+              class="px-4 py-2 rounded bg-yellow-400 text-[#222] font-bold shadow"
+              (click)="confirmarUnirse()">
+              Confirmar
+            </button>
+            <button type="button"
+              class="px-4 py-2 rounded bg-gray-700 text-white font-bold shadow"
+              (click)="closeUnirseModal()">
+              Cancelar
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+</div>
+
