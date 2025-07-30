@@ -25,6 +25,10 @@ export class PlayerDeck {
   cards = computed(() => this.playerDeck()?.deck);
   player = computed(() => this.playerDeck()?.player as IUser);
 
+  hasAnonymousCards = computed(() => {
+    return this.cards()?.some((card: ICard) => card.value === 0);
+  });
+
   ngOnInit() {
   }
 

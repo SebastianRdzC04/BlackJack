@@ -14,7 +14,7 @@
                     }">
                     Jugador: {{ player().fullName }}
                  </span>
-                 @if(playerDeck()?.totalValue !== -1){
+                 @if(playerDeck()?.totalValue !== -1 && !hasAnonymousCards()) {
                      <span class="text-white">Puntos: {{ playerDeck()?.totalValue }}</span>
                  }
                  <!-- Agrega más campos si lo necesitas -->
