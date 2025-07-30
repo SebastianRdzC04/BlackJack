@@ -22,6 +22,33 @@ services:
     volumes:
       - mongo_data_blackjack:/data/db
 
+  backend-blackjack:
+    build:
+      context: ../back_end
+      dockerfile: Dockerfile
+    container_name: backend-blackjack
+    restart: unless-stopped
+    env_file:
+      - ../back_end/.env.prod
+    depends_on:
+      - postgres-blackjack
+      - mongo-blackjack
+    ports:
+      - "2013:3333"
+      - "2014:3334"
+
+
+  frontend-blackjack:
+    build:
+      context: ../front-end
+      dockerfile: Dockerfile
+    ports:
+      - "2015:80"
+    container_name: frontend-blackjack
+    restart: unless-stopped
+    depends_on:
+      - backend-blackjack
+
 volumes:
   postgres_data_blackjack:
   mongo_data_blackjack:

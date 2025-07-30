@@ -2,7 +2,6 @@ import type { HttpContext } from '@adonisjs/core/http'
 import { Game } from '../mongo_models/game.js'
 import { PlayerDeck } from '../mongo_models/player_deck.js'
 import { Card } from '../mongo_models/cards.js';
-import User from '#models/user';
 import { io } from '#start/socket';
 
 export default class PlayerDecksController {

@@ -5,7 +5,6 @@ import { PlayerDeck } from '../mongo_models/player_deck.js'
 import User from '#models/user'
 import mongoose from 'mongoose';
 import { io } from '#start/socket'
-import { time } from 'node:console'
 
 
 interface ICard {
