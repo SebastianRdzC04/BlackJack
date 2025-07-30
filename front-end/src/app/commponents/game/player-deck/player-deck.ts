@@ -16,13 +16,16 @@ import { IUser } from '../../../models/user.model';
 })
 export class PlayerDeck {
 
+  // isSelected input se usa para resaltar el nombre del jugador si es true
+  isSelected = input<boolean>(false);
+
+  isPlayerDeck = input<boolean>(false);
+
   playerDeck = input<IPlayerDeckWithPlayer>();
   cards = computed(() => this.playerDeck()?.deck);
   player = computed(() => this.playerDeck()?.player as IUser);
 
   ngOnInit() {
-    console.log('Player deck initialized:', this.playerDeck());
-    console.log('player fullname', this.player());
   }
 
 

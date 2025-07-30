@@ -5,6 +5,7 @@ import { PlayerDeck } from '../mongo_models/player_deck.js'
 import User from '#models/user'
 import mongoose from 'mongoose';
 import { io } from '#start/socket'
+import { time } from 'node:console'
 
 
 interface ICard {
@@ -96,6 +97,10 @@ const startGame = async (gameId: string): Promise<IGame> => {
 export default class GamesController {
 
 
+  private minPlayersToStart = 2;
+  private maxPlayers = 7;
+
+
   async getGame({params, auth, response}: HttpContext) {
     const user = await auth.use('api').authenticate();
     const gameId = params.id;
@@ -142,15 +147,53 @@ export default class GamesController {
 
     const winnerData = game.winner ? await User.findBy('id', game.winner) : null;
 
+    const playersCount = playersDecksWithData.length;
+    if (playersCount === 0) {
+      return response.notFound({
+        message: 'No players found in this game'
+      });
+    }
+
+
+    const gameObject = game.toObject();
+    const gameWithData = {
+      ...gameObject,
+      players: playersData,
+      winner: winnerData,
+      playersCount: playersCount,
+    };
+    if (winnerData) {
+      return response.ok({
+        message: 'Game retrieved successfully',
+        data: {
+          isOwner: game.owner === user.id,
+          game: gameWithData,
+          playersDecks: playersDecksWithData,
+          isYourTurn: isPlayerTurn,
+          winner: winnerData
+        }
+      })
+    }
+
+
+    const numberOfTurn = game.turn;
+    let timeToBlackJack = false; // Placeholder for actual logic to determine if it's time for BlackJack
+    const allHaveTwoCards = playersDecksWithData.every(deck => deck.count === 2);
+    if ( numberOfTurn === 0 && allHaveTwoCards) {
+      timeToBlackJack = true;
+    }
+
+    const turnPlayerData = game.players[game.turn!];
+    const turnPlayer = await User.findBy('id', turnPlayerData);
+    if (!turnPlayer) {
+      return response.notFound({
+        message: 'Turn player not found'
+      });
+    }
+
 
 
     if (game.owner === user.id) {
-      const gameObject = game.toObject();
-      const gameWithData = {
-        ...gameObject,
-        players: playersData,
-        winner: winnerData
-      };
 
       return response.ok({
         message: 'Game retrieved successfully',
@@ -158,7 +201,9 @@ export default class GamesController {
           isOwner: game.owner === user.id,
           game: gameWithData,
           playersDecks: playersDecksWithData,
-          isYourTurn: isPlayerTurn
+          isYourTurn: isPlayerTurn,
+          timeToBlackJack: timeToBlackJack,
+          turnPlayer: turnPlayer,
         }
       });
     }else {
@@ -174,15 +219,38 @@ export default class GamesController {
         ...gameObject,
         deck: undefined, // Exclude the deck from the response
         players: playersData,
-        winner: winnerData
+        winner: winnerData,
+        playersCount: playersCount,
       }
+
+      const filteredDecks = playersDecksWithData.map(deck => {
+        if (deck.playerId === user.id) {
+          return deck;
+        } else {
+          // Devuelve un array de objetos con la estructura de ICard pero vacíos
+          return {
+            ...deck,
+            deck: Array.isArray(deck.deck)
+              ? deck.deck.map(() => ({
+                  _id: '',
+                  suit: '',
+                  rank: '',
+                  value: 0
+                }))
+              : []
+          }
+        }
+      })
+
       return response.ok({
         message: 'Game retrieved successfully',
         data: {
           isOwner: game.owner === user.id,
           game: gameWithoutDeck,
-          playersDecks: playersDecksWithData.filter(deck => deck.playerId === user.id),
+          playersDecks: filteredDecks,
           isYourTurn: isPlayerTurn,
+          timeToBlackJack: timeToBlackJack,
+          turnPlayer: turnPlayer,
         }
       });
     }
@@ -279,7 +347,7 @@ export default class GamesController {
         message: 'You are already in this game'
       });
     }
-    if (game.players.length >= 7) {
+    if (game.players.length >= this.maxPlayers) {
       return response.badRequest({
         message: 'Game is full'
       });
@@ -295,7 +363,7 @@ export default class GamesController {
       });
     }
 
-    game.players.push(user.id);
+    game.players.unshift(user.id);
     const playerDeck = new PlayerDeck({
       playerId: user.id,
       gameId: game._id,
@@ -345,7 +413,7 @@ export default class GamesController {
         message: 'Game is already active'
       });
     }
-    if (game.players.length < 2) {
+    if (game.players.length < this.minPlayersToStart) {
       return response.badRequest({
         message: 'Not enough players to start the game'
       });
@@ -424,12 +492,6 @@ export default class GamesController {
       });
     }
 
-    if (!game.is_active) {
-      return response.badRequest({
-        message: 'Game is not active'
-      });
-    }
-
     if (!game.players.includes(user.id)) {
       return response.badRequest({
         message: 'You are not in this game'
@@ -451,6 +513,23 @@ export default class GamesController {
     io.to(`game:${game._id}`).emit('gameNotify', { game: game._id });
 
     await PlayerDeck.deleteMany({ playerId: user.id, gameId: game._id });
+
+    //clean up player decks
+    const playerDecks = await PlayerDeck.find({ gameId: game._id });
+    if (!playerDecks) {
+      return response.notFound({
+        message: 'No player decks found for this game'
+      });
+    }
+
+    for (const playerDeck of playerDecks) {
+      playerDeck.deck = [];
+      playerDeck.count = 0;
+      playerDeck.totalValue = 0;
+      await playerDeck.save();
+    }
+
+
     return response.ok({
       message: 'Left game successfully',
       data: game

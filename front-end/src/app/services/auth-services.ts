@@ -5,6 +5,8 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable, tap, map, catchError, of } from 'rxjs';
 import { inject } from '@angular/core';
+import { registerResponse } from '../models/auth.model';
+import { registerModel } from '../models/auth.model';
 
 
 
@@ -36,6 +38,10 @@ export class AuthServices {
         console.error('Logout failed', error);
       }
     })
+  }
+
+  register(data: registerModel): Observable<registerResponse> {
+    return this.http.post<registerResponse>(`${this.apiUrl}register`, data);
   }
 
   isAuthenticated(): Observable<boolean> {

@@ -1,5 +1,5 @@
 services:
-  postgres-battleship:
+  postgres-blackjack:
     image: postgres:15
     restart: always
     environment:
@@ -9,9 +9,9 @@ services:
     ports:
       - "2011:5432"
     volumes:
-      - postgres_data_battleship:/var/lib/postgresql/data
+      - postgres_data_blackjack:/var/lib/postgresql/data
 
-  mongo-battleship:
+  mongo-blackjack:
     image: mongo:6
     restart: always
     environment:
@@ -20,8 +20,8 @@ services:
     ports:
       - "2012:27017"
     volumes:
-      - mongo_data_battleship:/data/db
+      - mongo_data_blackjack:/data/db
 
 volumes:
-  postgres_data_battleship:
-  mongo_data_battleship:
+  postgres_data_blackjack:
+  mongo_data_blackjack:

@@ -14,6 +14,7 @@ export interface IGame {
   winner: IUser | null;
   joinCode: string;
   isFinished: boolean;
+  playersCount: number;
 }
 
 
@@ -38,5 +39,7 @@ export interface GetGameResponse {
     game: IGame;
     playersDecks: IPlayerDeckWithPlayer[];
     isYourTurn: boolean;
+    timeToBlackJack?: boolean;
+    turnPlayer?: IUser;
   }
 }

@@ -6,6 +6,8 @@ import { inject } from '@angular/core';
 import { PlayerDeck } from '../../commponents/game/player-deck/player-deck';
 import { IPlayerDeckWithPlayer } from '../../models/playerDeck.model';
 import { PlayerDeckServices } from '../../services/player-deck-services';
+import { Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 
 
 @Component({
@@ -18,7 +20,16 @@ export class Game {
 
   private gameService = inject(GamesServices);
 
+  minNumberOfPlayers = 2;
+  maxNumberOfPlayers = 4;
+
+  gameId = signal<string | null>(null);
+
+  route = inject(ActivatedRoute);
+
   private playerDeckService = inject(PlayerDeckServices);
+
+  private router = inject(Router);
 
   user = localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')!) : null;
 
@@ -48,28 +59,62 @@ export class Game {
   });
 
   winner = computed(() => {
-    console.log('Current game Winner:', this.game()?.data.game.winner);
     return this.game()?.data.game.winner || null;
   })
 
+  allplayersReady = computed(() => {
+    return this.playerDecks().every(deck => deck.isReady) || false;
+  });
+
+  joinCode = computed(() => {
+    return this.game()?.data.game.joinCode || '';
+  });
+
+  numberOfPlayers = computed(() => {
+    return this.game()?.data.game.playersCount || 0;
+  });
+
+  numberTurn = computed(() => {
+    return this.game()?.data.game.turn || -1;
+  });
+
+  timeToBlackJack = computed(() => {
+    return this.game()?.data.timeToBlackJack || false;
+  });
+
+  totalValue = computed(() => {
+    return this.playerDeck()?.totalValue || 0;
+  });
+
+  isFinished = computed(() => {
+    return this.game()?.data.game.isFinished || false;
+  });
+
+  turnPlayer = computed(() => {
+    console.log('Turn player:', this.game()?.data.turnPlayer);
+    return this.game()?.data.turnPlayer || null;
+  });
+
+
 
   constructor() {
+    this.gameId.set(this.route.snapshot.paramMap.get('gameId'));
     effect(() => {
-      this.gameService.getGame().subscribe((game) => {
+      this.gameService.getGame(this.gameId()!).subscribe((game) => {
         this.game.set(game);
         this.playerDecks.set(game.data.playersDecks);
-        console.log('Game updated:', game);
-        console.log('Player decks:', this.playerDecks());
+        this.isGameFinished();
       });
     });
 
-    this.gameService.connectWebSocket().subscribe({
+    this.gameService.connectWebSocket(this.gameId()!).subscribe({
       next: (data) => {
-        this.gameService.getGame().subscribe((game) => {
+        this.gameService.getGame(this.gameId()!).subscribe((game) => {
           this.game.set(game);
           this.playerDecks.set(game.data.playersDecks);
           console.log('Game updated from WebSocket:', game);
           console.log('Player decks from WebSocket:', this.playerDecks());
+          this.isGameFinished();
         })
       },
       error: (error) => {
@@ -81,21 +126,23 @@ export class Game {
 
   }
 
+  ngOnDestroy() {
+    console.log('Game component destroyed, disconnecting WebSocket');
+    this.gameService.disconnectWebSocket();
+  }
+
   restartGame() {
 
     if (!this.game() || !this.isOwner()) {
-      console.log('You are not the owner of the game or the game is not available.');
       return;
     }
 
     if (!this.readyToRestart()) {
-      console.log('Game is not ready to be restarted.');
       return;
     }
 
-    this.playerDeckService.restartGame().subscribe({
+    this.playerDeckService.restartGame(this.gameId()!).subscribe({
       next: (response) => {
-        console.log('Game restarted successfully:', response);
         // Update game state if necessary
       },
       error: (error) => {
@@ -108,9 +155,8 @@ export class Game {
   playerReady() {
     if (!this.game() || !this.playerDeck()) return;
 
-    this.playerDeckService.setPlayerReady().subscribe({
+    this.playerDeckService.setPlayerReady(this.gameId()!).subscribe({
       next: (response) => {
-        console.log('Player is ready:', response);
         this.playerDecks.set(this.playerDecks().map(deck => 
           deck.playerId === this.user?.id ? {...deck, isReady: true} : deck
         ));
@@ -123,9 +169,8 @@ export class Game {
   }
 
   startGame() {
-    this.gameService.startGame().subscribe({
+    this.gameService.startGame(this.gameId()!).subscribe({
       next: (response) => {
-        console.log('Game started:', response);
       },
       error: (error) => {
         console.error('Error starting game:', error);
@@ -137,15 +182,13 @@ export class Game {
     if (!this.game() || !this.playerDeck()) return;
 
     if (!this.isYourTurn()) {
-      console.log('It is not your turn to request a card.');
       return;
     }
 
 
 
-    this.playerDeckService.pedirCarta().subscribe({
+    this.playerDeckService.pedirCarta(this.gameId()!).subscribe({
       next: (response) => {
-        console.log('Card requested:', response);
         // Update player deck with the new card
       },
       error: (error) => {
@@ -158,13 +201,11 @@ export class Game {
     if (!this.game() || !this.playerDeck()) return;
 
     if (!this.isYourTurn()) {
-      console.log('It is not your turn to finish.');
       return;
     }
 
-    this.playerDeckService.terminarTurno().subscribe({
+    this.playerDeckService.terminarTurno(this.gameId()!).subscribe({
       next: (response) => {
-        console.log('Turn ended successfully:', response);
         // Update game state if necessary
       },
       error: (error) => {
@@ -172,6 +213,52 @@ export class Game {
       }
     });
   }
+
+  setBlackJack() {
+    if (!this.game() || !this.playerDeck()) return;
+
+    if (!this.timeToBlackJack()) {
+      return;
+    }
+    if (this.playerDeck()?.totalValue !== 21) {
+      return;
+    }
+
+    this.playerDeckService.blackJack(this.gameId()!).subscribe({
+      next: (response) => {
+        // Update game state if necessary
+      },
+      error: (error) => {
+        console.error('Error declaring BlackJack:', error);
+      }
+    });
+  }
+
+  leaveGame() {
+    if (!this.game()) return;
+
+    this.gameService.leaveGame(this.gameId()!).subscribe({
+      next: (response) => {
+        localStorage.removeItem('gameId');
+        this.router.navigate(['/']);  // Redirect to home or another page
+        // Optionally, redirect or update state after leaving the game
+      },
+      error: (error) => {
+        console.error('Error leaving game:', error);
+      }
+    });
+  }
+
+  isGameFinished() {
+    if (!this.game()) return false;
+    if (this.isFinished()) {
+      localStorage.removeItem('gameId');
+      this.router.navigate(['/']);
+      return true;
+    }
+    return false;
+  }
+
 
 
 }

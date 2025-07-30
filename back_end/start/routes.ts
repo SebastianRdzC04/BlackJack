@@ -26,7 +26,9 @@ router.get('/games/deck/:id', [GamesController, 'viewDeck'])
 router.post('/games/join/:code', [GamesController, 'joinGame'])
 router.post('/games/start/:id', [GamesController, 'startGame'])
 router.post('/games/restart/:id', [GamesController, 'restartGame'])
+router.post('/games/leave/:id', [GamesController, 'leaveGame']).use(middleware.auth({guards: ['api']}))
 router.get('/games/:id', [GamesController, 'getGame']).use(middleware.auth({guards: ['api']}))
+
 
 
 router.post('/player-decks/pedir-carta/:id', [PlayerDecksController, 'pedirCarta'])

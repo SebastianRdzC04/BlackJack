@@ -43,16 +43,14 @@ export class Index {
     // Por ejemplo: this.partidaService.iniciarPartida({ seguro: this.seguro });
     this.gameService.createGame().subscribe({
       next: (response) => {
-        console.log('Partida creada:', response);
-        console.log('ID de la partida:', response.data.game._id);
         localStorage.setItem('gameId', response.data.game._id);
-
-      }, error: (error) => {
+        this.router.navigate(['/game/' + response.data.game._id]);
+      },
+      error: (error) => {
         console.error('Error al crear la partida:', error);
+        // Aquí puedes manejar el error, por ejemplo, mostrar un mensaje al usuario
       }
     });
-
-    this.router.navigate(['/game']);
 
     this.closeSeguroModal();
   }
@@ -70,10 +68,22 @@ export class Index {
     
     this.gameService.joinGame(this.codigoPartida).subscribe({
       next: (response) => {
-        console.log('Unido a la partida:', response);
         localStorage.setItem('gameId', response.data.game._id);
-        this.router.navigate(['/game']);
-      }, error: (error) => {
+
+        // DEBUG: Obtener el game antes de navegar
+        this.gameService.getGame(response.data.game._id).subscribe({
+          next: (getGameResponse) => {
+            if (getGameResponse.data && getGameResponse.data.game) {
+            }
+            this.router.navigate(['/game/' + response.data.game._id]);
+          },
+          error: (err) => {
+            console.error('Error al obtener el game tras unirse:', err);
+            this.router.navigate(['/game/' + response.data.game._id]);
+          }
+        });
+      }, 
+      error: (error) => {
         console.error('Error al unirse a la partida:', error);
         // Aquí puedes manejar el error, por ejemplo, mostrar un mensaje al usuario
       }
@@ -81,3 +91,4 @@ export class Index {
     this.closeUnirseModal();
   }
 }
+

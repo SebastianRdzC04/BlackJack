@@ -9,15 +9,22 @@ import { Router } from '@angular/router';
 export const isGameValidGuard: CanActivateFn = (route, state) => {
   const gamesService = inject(GamesServices);
   const router = inject(Router);
+  const gameId = localStorage.getItem('gameId');
 
-  return gamesService.getGame().pipe(
-    map((response: GetGameResponse) => {
-      if (response.data.game) {
-        return true; // Permite entrar
-      } else {
-        return router.createUrlTree(['']);
-      }
-    }),
-    catchError(() => of(router.createUrlTree(['']))) // Si hay error, redirige a la raíz
-  );
+
+  if(gameId){
+    return gamesService.getGame(gameId).pipe(
+      map((response: GetGameResponse) => {
+        if (response.data.game) {
+          return true; // Permite entrar
+        } else {
+          return router.createUrlTree(['']);
+        }
+      }),
+      catchError(() => of(router.createUrlTree(['']))) // Si hay error, redirige a la raíz
+    );
+  }
+
+  return router.createUrlTree(['']); // Si no hay gameId, redirige a la raíz
+
 };

@@ -19,22 +19,26 @@ export class GamesServices {
     return this.http.post<CreateGameResponse>(`${environment.apiUrl}games`, {});
   }
 
-  getGame(): Observable<GetGameResponse> {
-    return this.http.get<GetGameResponse>(`${environment.apiUrl}games/${this.gameId}`);
+  getGame(gameId?: string): Observable<GetGameResponse> {
+    return this.http.get<GetGameResponse>(`${environment.apiUrl}games/${gameId || this.gameId}`);
   }
 
   joinGame(joinCode: string): Observable<JoinGameResponse> {
     return this.http.post<JoinGameResponse>(`${environment.apiUrl}games/join/${joinCode}`, {});
   }
 
-  startGame(): Observable<CreateGameResponse> {
-    return this.http.post<CreateGameResponse>(`${environment.apiUrl}games/start/${this.gameId}`, {});
+  startGame(gameId?: string): Observable<CreateGameResponse> {
+    return this.http.post<CreateGameResponse>(`${environment.apiUrl}games/start/${gameId || this.gameId}`, {});
   }
 
-  connectWebSocket(): Observable<any> {
+  leaveGame(gameId?: string): Observable<any> {
+    return this.http.post(`${environment.apiUrl}games/leave/${gameId || this.gameId}`, {});
+  }
+
+  connectWebSocket(gameId?: string): Observable<any> {
     if (!this.socket) {
       this.socket = io(`${environment.wsUrl}`);
-      this.socket.emit('join', this.gameId);
+      this.socket.emit('join', gameId || this.gameId);
     }
     return new Observable(observer => {
       this.socket!.on('gameNotify', (data: any) => {
@@ -44,6 +48,11 @@ export class GamesServices {
       return () => this.socket!.disconnect();
     });
   }
-
+  disconnectWebSocket() {
+    if (this.socket) {
+      this.socket.disconnect();
+      this.socket = null;
+    }
+  }
 }
   

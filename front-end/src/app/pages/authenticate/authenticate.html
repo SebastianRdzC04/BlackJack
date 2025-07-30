@@ -1,35 +1,77 @@
-<div style="display: flex; justify-content: center; align-items: center; height: 100vh; background: radial-gradient(circle at 50% 30%, #222 60%, #111 100%);">
-  <form style="
-    background: rgba(30, 30, 30, 0.98);
-    padding: 2.5rem 3rem;
-    border-radius: 18px;
-    box-shadow: 0 4px 32px 0 rgba(0,0,0,0.45), 0 0 0 4px #d4af37;
-    min-width: 340px;
-    border: 2px solid #d4af37;
-    position: relative;
-    ">
-    <div style="position: absolute; top: -32px; left: 50%; transform: translateX(-50%);">
-      <img src="https://cdn-icons-png.flaticon.com/512/616/616554.png" alt="Casino" style="width: 64px; height: 64px; filter: drop-shadow(0 2px 8px #d4af37);">
+<div class="flex items-center justify-center min-h-screen bg-gradient-to-b from-zinc-900 via-zinc-800 to-zinc-950">
+  <form
+    class="relative bg-zinc-900/95 px-8 py-10 rounded-2xl shadow-2xl border-2 border-yellow-400 min-w-[340px] w-full max-w-md"
+    [formGroup]="form"
+    (ngSubmit)="submit()"
+    autocomplete="off"
+  >
+    <div class="absolute -top-12 left-1/2 -translate-x-1/2">
+      <img src="https://cdn-icons-png.flaticon.com/512/616/616554.png" alt="Casino"
+        class="w-16 h-16 drop-shadow-[0_2px_8px_rgba(212,175,55,0.7)]" />
     </div>
-    <h2 style="text-align: center; margin-bottom: 2rem; color: #d4af37; font-family: 'Cinzel', serif; letter-spacing: 2px; font-size: 2rem; text-shadow: 0 2px 8px #000;">
+    <h2 class="text-center mb-8 text-yellow-400 font-cinzel tracking-wider text-2xl drop-shadow font-bold">
       BlackJack Casino
     </h2>
-    <div style="margin-bottom: 1.2rem;">
-      <label for="email" style="display: block; margin-bottom: 0.5rem; color: #fff; font-weight: 500; letter-spacing: 1px;">Correo:</label>
-      <input type="email" id="email" [formControl]="email" placeholder="ejemplo@casino.com"
-        style="width: 100%; padding: 0.7rem; border: 1.5px solid #d4af37; border-radius: 8px; font-size: 1rem; background: #222; color: #fff; box-shadow: 0 1px 6px #000;">
+    <div *ngIf="mode === 'register'" class="mb-4">
+      <label for="name" class="block mb-1 text-white font-medium tracking-wide">Nombre:</label>
+      <input
+        id="name"
+        type="text"
+        formControlName="name"
+        placeholder="Tu nombre"
+        class="w-full px-3 py-2 border border-yellow-400 rounded-lg bg-zinc-800 text-white focus:outline-none focus:ring-2 focus:ring-yellow-400"
+        [class.border-red-500]="form.get('name')?.invalid && form.get('name')?.touched"
+        [required]="mode === 'register'"
+      />
     </div>
-    <div style="margin-bottom: 1.5rem;">
-      <label for="password" style="display: block; margin-bottom: 0.5rem; color: #fff; font-weight: 500; letter-spacing: 1px;">Contraseña:</label>
-      <input type="password" id="password" [formControl]="password" placeholder="Mínimo 6 caracteres"
-        style="width: 100%; padding: 0.7rem; border: 1.5px solid #d4af37; border-radius: 8px; font-size: 1rem; background: #222; color: #fff; box-shadow: 0 1px 6px #000;">
+    <div class="mb-4">
+      <label for="email" class="block mb-1 text-white font-medium tracking-wide">Correo:</label>
+      <input
+        id="email"
+        type="email"
+        formControlName="email"
+        placeholder="ejemplo@casino.com"
+        class="w-full px-3 py-2 border border-yellow-400 rounded-lg bg-zinc-800 text-white focus:outline-none focus:ring-2 focus:ring-yellow-400"
+        [class.border-red-500]="form.get('email')?.invalid && form.get('email')?.touched"
+        required
+      />
     </div>
-    <button type="button" (click)="login()"
-      style="width: 100%; padding: 0.9rem; background: linear-gradient(90deg, #d4af37 0%, #b8860b 100%); color: #222; border: none; border-radius: 8px; font-size: 1.15rem; font-family: 'Cinzel', serif; font-weight: bold; letter-spacing: 1px; cursor: pointer; box-shadow: 0 2px 12px #d4af37;">
-      Iniciar sesión
+    <div class="mb-6">
+      <label for="password" class="block mb-1 text-white font-medium tracking-wide">Contraseña:</label>
+      <input
+        id="password"
+        type="password"
+        formControlName="password"
+        placeholder="Mínimo 6 caracteres"
+        class="w-full px-3 py-2 border border-yellow-400 rounded-lg bg-zinc-800 text-white focus:outline-none focus:ring-2 focus:ring-yellow-400"
+        [class.border-red-500]="form.get('password')?.invalid && form.get('password')?.touched"
+        required
+      />
+    </div>
+    <button
+      type="submit"
+      [disabled]="loading"
+      class="w-full py-3 bg-gradient-to-r from-yellow-400 to-yellow-700 text-zinc-900 rounded-lg font-cinzel font-bold tracking-wide text-lg shadow-lg hover:from-yellow-300 hover:to-yellow-600 transition disabled:opacity-60"
+    >
+      {{ mode === 'login' ? 'Iniciar sesión' : 'Registrarse' }}
     </button>
-    <div style="text-align: center; margin-top: 1.5rem;">
-      <span style="color: #d4af37; font-size: 0.95rem;">¡Bienvenido al casino BlackJack!</span>
+    <div class="text-center mt-4">
+      <button
+        type="button"
+        (click)="switchMode()"
+        class="text-yellow-400 underline hover:text-yellow-300 transition"
+      >
+        {{ mode === 'login' ? '¿No tienes cuenta? Regístrate' : '¿Ya tienes cuenta? Inicia sesión' }}
+      </button>
+    </div>
+    <div *ngIf="errorMsg" class="mt-4 text-center text-red-400 font-semibold">
+      {{ errorMsg }}
+    </div>
+    <div *ngIf="successMsg" class="mt-4 text-center text-green-400 font-semibold">
+      {{ successMsg }}
+    </div>
+    <div class="text-center mt-6">
+      <span class="text-yellow-400 text-base">¡Bienvenido al casino BlackJack!</span>
     </div>
   </form>
 </div>

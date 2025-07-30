@@ -18,7 +18,7 @@ export const routes: Routes = [
         canActivate: [authGuard] // Protect the index page for authenticated users
     },
     {
-        path: 'game',
+        path: 'game/:gameId',
         component: Game,
         canActivate: [authGuard, isGameValidGuard] // Protect the game page for authenticated users
     }

@@ -6,11 +6,17 @@
         <!-- Mostrar información del usuario -->
          @if (playerDeck()?.player){
              <div class="flex flex-col items-center">
-                 <span class="text-white">Jugador: {{ player().fullName }}</span>
+                 <span 
+                    [ngClass]="{
+                        'bg-yellow-400 text-black font-bold px-2 rounded': isSelected(),
+                        'text-green-400': !isSelected() && isPlayerDeck(),
+                        'text-white': !isSelected() && !isPlayerDeck()
+                    }">
+                    Jugador: {{ player().fullName }}
+                 </span>
                  @if(playerDeck()?.totalValue !== -1){
                      <span class="text-white">Puntos: {{ playerDeck()?.totalValue }}</span>
                  }
-
                  <!-- Agrega más campos si lo necesitas -->
              </div>
          }

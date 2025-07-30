@@ -14,6 +14,8 @@ import { CommonModule } from '@angular/common';
 export class Deck {
   deck = input<ICard[]>();
 
+  anonimous = input<boolean>(false);
+
   length = computed(() => this.deck()?.length?? 0);
 
 

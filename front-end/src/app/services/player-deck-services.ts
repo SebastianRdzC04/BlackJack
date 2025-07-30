@@ -13,20 +13,24 @@ export class PlayerDeckServices {
   private http = inject(HttpClient);
   private gameId = localStorage.getItem('gameId') || '';
 
-  setPlayerReady(): Observable<ReadyPlayerResponse> {
-    return this.http.post<ReadyPlayerResponse>(`${environment.apiUrl}player-decks/ready/${this.gameId}`, {});
+  setPlayerReady(gameId?: string): Observable<ReadyPlayerResponse> {
+    return this.http.post<ReadyPlayerResponse>(`${environment.apiUrl}player-decks/ready/${gameId || this.gameId}`, {});
   }
 
-  pedirCarta(): Observable<PedirCartaResponse> {
-    return this.http.post<PedirCartaResponse>(`${environment.apiUrl}player-decks/pedir-carta/${this.gameId}`, {});
+  pedirCarta(gameId?: string): Observable<PedirCartaResponse> {
+    return this.http.post<PedirCartaResponse>(`${environment.apiUrl}player-decks/pedir-carta/${gameId || this.gameId}`, {});
   }
 
-  terminarTurno(): Observable<any> {
-    return this.http.post(`${environment.apiUrl}player-decks/finish/${this.gameId}`, {});
+  terminarTurno(gameId?: string): Observable<any> {
+    return this.http.post(`${environment.apiUrl}player-decks/finish/${gameId || this.gameId}`, {});
   }
 
-  restartGame(): Observable<any> {
-    return this.http.post(`${environment.apiUrl}games/restart/${this.gameId}`, {});
+  restartGame(gameId?: string): Observable<any> {
+    return this.http.post(`${environment.apiUrl}games/restart/${gameId || this.gameId}`, {});
+  }
+
+  blackJack(gameId?: string): Observable<any> {
+    return this.http.post(`${environment.apiUrl}player-decks/blackjack/${gameId || this.gameId}`, {});
   }
 
 }
